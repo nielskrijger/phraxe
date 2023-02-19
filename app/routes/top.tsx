@@ -13,7 +13,6 @@ export async function loader() {
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
-  console.log(data);
   return (
     <main className="flex h-full flex-col px-2 lg:px-0">
       <H4 className="pl-3">Recent</H4>

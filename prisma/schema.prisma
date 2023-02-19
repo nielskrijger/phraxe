@@ -7,32 +7,154 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
 model User {
-  id    String @id @default(cuid())
-  email String @unique
+  id              String           @default(cuid()) @id
+  email           String           @unique
+  username        String           @unique
+  usernameLower   String           @unique          @map("username_lower")
+  createdAt       DateTime         @default(now())  @map("created_at")
+  updatedAt       DateTime         @updatedAt       @map("updated_at")
+  role            Role             @default(USER)
+  password        Password?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  phrases         Phrase[]
+  likes           Like[]
+  lists           List[]
+  sent            Message[]        @relation("Author")
+  pms             Message[]        @relation("Receiver")
 
-  password Password?
-  notes    Note[]
+  @@map("users")
 }
 
 model Password {
-  hash String
-
+  hash   String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+  userId String @unique @map("user_id")
+
+  @@map("passwords")
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
+enum PhraseShare {
+  PRIVATE
+  PUBLIC_OWNER
+  PUBLIC
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum PhraseType {
+  CATCHPHRASE
+  PROVERB
+  QUOTATION
+  OTHER
+}
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
+model Phrase {
+  id             String  @id
+  slug           String
+  title          String?
+  text           String
+  language       String
+  type           PhraseType
+  description    String?
+  attribution    String?
+  source         String?
+  share          PhraseShare
+  favoritesCount Int        @map("favorites_count") @default(0)
+  likesSum       Int        @map("likes_sum")       @default(0)
+  likesCount     Int        @map("likes_count")     @default(0)
+  createdAt      DateTime   @map("created_at")      @default(now())
+  updatedAt      DateTime   @map("updated_at")      @updatedAt
+  user           User?      @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  userId         String?    @map("user_id")
+
+  likes          Like[]
+  tags           Tag[]
+  listItems      ListItem[]
+  messages       Message[]  @relation("Phrase")
+
+  @@map("phrases")
+}
+
+enum LikeObjectType {
+  PHRASE
+  COMMENT
+}
+
+model Like {
+  id         String         @id                   @default(cuid())
+  isDislike  Boolean        @map("is_dislike")    @default(false)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId     String         @map("user_id")
+  phrase     Phrase?        @relation(fields: [objectId], references: [id])
+  objectId   String
+  objectType LikeObjectType
+  createdAt  DateTime       @map("created_at")    @default(now())
+
+  @@map("likes")
+}
+
+model List {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @map("created_at")    @default(now())
+  updatedAt DateTime @map("updated_at")    @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String   @map("user_id")
+
+  ListItems ListItem[]
+
+  @@map("lists")
+}
+
+model ListItem {
+  id        String   @id                @default(cuid())
+  createdAt DateTime @map("created_at") @default(now())
+  list      List     @relation(fields: [listId], references: [id])
+  listId    String   @map("list_id")
+  phrase    Phrase   @relation(fields: [phraseId], references: [id])
+  phraseId  String   @map("phrase_id")
+
+  @@map("list_items")
+}
+
+model Tag {
+  id        String   @id   @default(cuid())
+  language  String
+  name      String
+  posts     Phrase[]
+  createdAt DateTime @map("created_at")    @default(now())
+
+  @@unique([name, language])
+  @@map("tags")
+}
+
+enum MessageObjectType {
+  PHRASE
+  PM
+}
+
+model Message {
+  id         String            @id               @default(cuid())
+  message    String
+  parent     Message?          @relation("Parent", fields: [parentId], references: [id])
+  parentId   String?           @map("parent_id")
+  user       User?             @relation("Author", fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  userId     String?           @map("user_id")
+  createdAt  DateTime          @map("created_at")    @default(now())
+  updatedAt  DateTime          @map("updated_at")    @updatedAt
+
+  // PM messages have a receiver, phrases are targetting a Phrase
+  phrase     Phrase?           @relation("Phrase", fields: [objectId], references: [id], map: "phrase_message_fk")
+  receiver   User?             @relation("Receiver", fields: [objectId], references: [id], map: "receiver_message_fk")
+  objectId   String            @map("object_id")
+  objectType MessageObjectType @map("object_type")
+
+  child      Message[]         @relation("Parent")
+
+  @@map("messages")
 }

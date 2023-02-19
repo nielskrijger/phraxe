@@ -1,21 +1,26 @@
-import { PrismaClient } from "@prisma/client";
+import { PhraseShare, PhraseType, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { kebabCase } from "lodash";
+import { slugify } from "~/utils/slugify";
 
 const prisma = new PrismaClient();
 
 async function seed() {
-  const email = "rachel@remix.run";
+  const johnEmail = "john@example.com";
+  const janeEmail = "jane@example.com";
 
   // cleanup the existing database
-  await prisma.user.delete({ where: { email } }).catch(() => {
-    // no worries if it doesn't exist yet
-  });
+  await prisma.user.deleteMany({});
+  await prisma.tag.deleteMany({});
+  await prisma.phrase.deleteMany({});
 
-  const hashedPassword = await bcrypt.hash("racheliscool", 10);
+  const hashedPassword = await bcrypt.hash("password123", 10);
 
-  const user = await prisma.user.create({
+  const john = await prisma.user.create({
     data: {
-      email,
+      email: johnEmail,
+      username: "John",
+      usernameLower: "john",
       password: {
         create: {
           hash: hashedPassword,
@@ -24,19 +29,187 @@ async function seed() {
     },
   });
 
-  await prisma.note.create({
+  const jane = await prisma.user.create({
     data: {
-      title: "My first note",
-      body: "Hello, world!",
-      userId: user.id,
+      email: janeEmail,
+      username: "Jane",
+      usernameLower: "jane",
+      password: {
+        create: {
+          hash: hashedPassword,
+        },
+      },
     },
   });
 
-  await prisma.note.create({
+  await prisma.phrase.create({
     data: {
-      title: "My second note",
-      body: "Hello, world!",
-      userId: user.id,
+      id: "phrase-1",
+      slug: kebabCase("Gall's Law"),
+      type: PhraseType.QUOTATION,
+      language: "en",
+      share: PhraseShare.PUBLIC,
+      title: "Gall's Law",
+      text: "A complex system that works is invariably found to have evolved from a simple system that worked. The inverse proposition also appears to be true: A complex system designed from scratch never works and cannot be made to work. You have to start over, beginning with a working simple system.",
+      description:
+        "Gall's Law is a rule of thumb for systems design from Gall's book Systemantics: How Systems Really Work and How They Fail. This law is essentially an argument in favour of underspecification: it can be used to explain the success of systems like the World Wide Web and Blogosphere, which grew from simple to complex systems incrementally, and the failure of systems like CORBA, which began with complex specifications. Gall's Law has strong affinities to the practice of agile software development.",
+      attribution: "John Gall",
+      source: "https://en.wikipedia.org/wiki/John_Gall_(author)#Gall's_law",
+      userId: john.id,
+      tags: {
+        create: [
+          { name: "Software", language: "en" },
+          { name: "Laws", language: "en" },
+        ],
+      },
+    },
+  });
+
+  await prisma.phrase.create({
+    data: {
+      id: "phrase-2",
+      type: PhraseType.OTHER,
+      slug: kebabCase("Screw motivation, what you need is discipline."),
+      language: "en",
+      share: PhraseShare.PRIVATE,
+      title: "PRIVATE PHRASE",
+      text: "Screw motivation, what you need is discipline.",
+      source:
+        "https://www.wisdomination.com/screw-motivation-what-you-need-is-discipline/",
+      userId: john.id,
+      tags: {
+        create: [
+          { name: "Motivation", language: "en" },
+          { name: "Discipline", language: "en" },
+        ],
+      },
+    },
+  });
+
+  await prisma.phrase.create({
+    data: {
+      id: "phrase-3",
+      type: PhraseType.PROVERB,
+      slug: kebabCase("Birds of a feather flock together."),
+      language: "en",
+      share: PhraseShare.PUBLIC_OWNER,
+      title: "PUBLIC-OWNER PHRASE",
+      text: "Birds of a feather flock together.",
+      description:
+        "People of the same sort or with the same tastes and interests will be found together.",
+      userId: john.id,
+      tags: {
+        create: [{ name: "Interests", language: "en" }],
+      },
+    },
+  });
+
+  const softwareTag = await prisma.tag.findFirst({
+    where: { name: "Software", language: "en" },
+  });
+
+  await prisma.phrase.create({
+    data: {
+      id: "phrase-4",
+      type: PhraseType.QUOTATION,
+      slug: slugify("Conway's Law"),
+      language: "en",
+      share: PhraseShare.PUBLIC,
+      title: "Conway's Law",
+      text: "Any organization that designs a system (defined broadly) will produce a design whose structure is a copy of the organization's communication structure.",
+      description:
+        "Conway's law is an adage that states organizations design systems that mirror their own communication structure. It is named after the computer programmer Melvin Conway, who introduced the idea in 1967.",
+      attribution: "Melvin Conway",
+      userId: john.id,
+      tags: {
+        create: [{ name: "Organization", language: "en" }],
+        connect: [{ id: softwareTag?.id }],
+      },
+    },
+  });
+
+  await prisma.phrase.create({
+    data: {
+      id: "phrase-5",
+      type: PhraseType.OTHER,
+      slug: slugify(
+        "We laten de kwaliteit van de dag afhangen van hoe goed we hebben geslapen, i.p.v. dat de kwaliteit van de dag bepaalt hoe we slapen."
+      ),
+      language: "nl",
+      share: PhraseShare.PUBLIC,
+      text: "We laten de kwaliteit van de dag afhangen van hoe goed we hebben geslapen, i.p.v. dat de kwaliteit van de dag bepaalt hoe we slapen.",
+      userId: john.id,
+      tags: {
+        create: [
+          { name: "Slaap", language: "nl" },
+          { name: "Geluk", language: "nl" },
+        ],
+      },
+    },
+  });
+
+  await prisma.phrase.create({
+    data: {
+      id: "phrase-6",
+      type: PhraseType.QUOTATION,
+      slug: slugify(
+        "Spread love everywhere you go. Let no one ever come to you without leaving happier."
+      ),
+      language: "en",
+      share: PhraseShare.PUBLIC,
+      text: "Spread love everywhere you go. Let no one ever come to you without leaving happier.",
+      attribution: "Mother Teresa",
+      userId: jane.id,
+      tags: {
+        create: [{ name: "Love", language: "en" }],
+      },
+    },
+  });
+
+  await prisma.phrase.create({
+    data: {
+      id: "phrase-7",
+      type: PhraseType.QUOTATION,
+      slug: slugify("Life is a long lesson in humility"),
+      language: "en",
+      share: PhraseShare.PUBLIC,
+      text: "Life is a long lesson in humility",
+      attribution: "James M. Barrie",
+      userId: jane.id,
+      tags: {
+        create: [
+          { name: "Life", language: "en" },
+          { name: "Humility", language: "en" },
+        ],
+      },
+    },
+  });
+
+  await prisma.phrase.create({
+    data: {
+      id: "phrase-8",
+      type: PhraseType.OTHER,
+      slug: slugify("Markdown"),
+      language: "en",
+      share: PhraseShare.PUBLIC,
+      title: "Markdown",
+      text: "This phrase has a markdown description",
+      description: `A paragraph with *emphasis* and **strong importance**.
+
+> A block quote with ~strikethrough~ and a URL: https://reactjs.org.
+
+* Lists
+* [ ] todo
+* [x] done
+
+A table:
+
+| a | b |
+| - | - |`,
+      userId: jane.id,
+      tags: {
+        create: [{ name: "Markdown", language: "en" }],
+      },
     },
   });
 
