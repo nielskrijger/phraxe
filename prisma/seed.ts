@@ -1,19 +1,20 @@
 import { PhraseShare, PhraseType, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { kebabCase } from "lodash";
+import { kebabCase, startCase } from "lodash";
 import { slugify } from "~/utils/slugify";
+import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
 
 async function seed() {
-  const johnEmail = "john@example.com";
-  const janeEmail = "jane@example.com";
-
   // cleanup the existing database
   await prisma.user.deleteMany({});
   await prisma.tag.deleteMany({});
   await prisma.phrase.deleteMany({});
 
+  const johnEmail = "john@example.com";
+  const janeEmail = "jane@example.com";
+  const emptyEmail = "empty@example.com";
   const hashedPassword = await bcrypt.hash("password123", 10);
 
   const john = await prisma.user.create({
@@ -34,6 +35,20 @@ async function seed() {
       email: janeEmail,
       username: "Jane",
       usernameLower: "jane",
+      password: {
+        create: {
+          hash: hashedPassword,
+        },
+      },
+    },
+  });
+
+  await prisma.user.create({
+    // empty user that does not have any phrases
+    data: {
+      email: emptyEmail,
+      username: "Empty",
+      usernameLower: "empty",
       password: {
         create: {
           hash: hashedPassword,
@@ -71,7 +86,7 @@ async function seed() {
       type: PhraseType.OTHER,
       slug: kebabCase("Screw motivation, what you need is discipline."),
       language: "en",
-      share: PhraseShare.PRIVATE,
+      share: PhraseShare.RESTRICTED,
       title: "PRIVATE PHRASE",
       text: "Screw motivation, what you need is discipline.",
       source:
@@ -92,7 +107,7 @@ async function seed() {
       type: PhraseType.PROVERB,
       slug: kebabCase("Birds of a feather flock together."),
       language: "en",
-      share: PhraseShare.PUBLIC_OWNER,
+      share: PhraseShare.RESTRICTED,
       title: "PUBLIC-OWNER PHRASE",
       text: "Birds of a feather flock together.",
       description:
@@ -212,6 +227,54 @@ A table:
       },
     },
   });
+
+  for (let i = 0; i < 1000; i++) {
+    // Create tag(s) if needed
+    const connect = [];
+    const numTags = faker.datatype.number(3);
+    for (let i = 0; i < numTags; i++) {
+      const name = faker.hacker.noun();
+      let tag = await prisma.tag.findFirst({
+        where: { name, language: "en" },
+      });
+      if (!tag) {
+        await prisma.tag.create({ data: { name, language: "en" } });
+      }
+      tag = await prisma.tag.findFirst({ where: { name, language: "en" } });
+      if (tag === null) {
+        throw new Error("Failed to create tag");
+      }
+      connect.push({ id: tag.id });
+    }
+
+    await prisma.phrase.create({
+      data: {
+        id: `faker-${i + 1}`,
+        type: faker.helpers.arrayElement(
+          Object.values(PhraseType)
+        ) as PhraseType,
+        slug: slugify("Markdown"),
+        language: "en",
+        share: PhraseShare.PUBLIC,
+        title:
+          faker.datatype.number(1) > 0 // 50% chance of separate title
+            ? startCase(
+                `${faker.hacker.noun()} ${faker.hacker.adjective()} ${faker.hacker.verb()}`
+              )
+            : null,
+        text: faker.hacker.phrase(),
+        description: faker.lorem.paragraph(),
+        userId: faker.helpers.arrayElement([john.id, jane.id]),
+        createdAt: faker.date.between(
+          "2020-01-01T00:00:00.000Z",
+          "2023-01-01T00:00:00.000Z"
+        ),
+        tags: {
+          connect,
+        },
+      },
+    });
+  }
 
   console.log(`Database has been seeded. 🌱`);
 }

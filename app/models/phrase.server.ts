@@ -6,7 +6,7 @@ import { customAlphabet } from "nanoid";
 import { slugify } from "~/utils/slugify";
 import { createOrConnectTagsQuery } from "~/models/tag.server";
 
-export function getPhrase(id: string) {
+export async function getPhrase(id: string, userId?: string) {
   return prisma.phrase.findFirst({
     where: { id },
     include: {
@@ -17,6 +17,7 @@ export function getPhrase(id: string) {
         },
       },
       tags: true,
+      likes: userId ? { where: { userId } } : false,
     },
   });
 }
@@ -36,6 +37,7 @@ const nanoid = customAlphabet(
 
 export async function createPhrase({
   text,
+  type,
   title,
   language,
   share,
@@ -47,6 +49,7 @@ export async function createPhrase({
 }: Pick<
   Phrase,
   | "text"
+  | "type"
   | "language"
   | "title"
   | "share"
@@ -57,6 +60,7 @@ export async function createPhrase({
   return prisma.phrase.create({
     data: {
       id: nanoid(),
+      type,
       slug: title ? slugify(title) : slugify(text),
       text,
       title,
@@ -75,21 +79,33 @@ export async function createPhrase({
   });
 }
 
-export function getPhrases(where: PhraseWhereInput, orderBy: "createdAt") {
-  return prisma.phrase.findMany({
-    take: 25,
-    where,
-    include: {
-      user: {
-        select: {
-          username: true,
-          usernameLower: true,
+export function getPhrases(
+  where: PhraseWhereInput,
+  orderBy: "createdAt" | "likesSum",
+  take: number,
+  skip: number,
+  userId?: string
+) {
+  return Promise.all([
+    prisma.phrase.findMany({
+      take,
+      skip,
+      where,
+      include: {
+        user: {
+          select: {
+            username: true,
+            usernameLower: true,
+          },
         },
+        tags: true,
+        likes: userId ? { where: { userId } } : false,
       },
-      tags: true,
-    },
-    orderBy: [{ [orderBy]: "desc" }],
-  });
+      orderBy: [{ [orderBy]: "desc" }],
+    }),
+    prisma.phrase.count({ where }),
+    skip,
+  ]);
 }
 
 export function deletePhrase({

@@ -10,10 +10,14 @@ import {
 } from "@remix-run/react";
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
+import tippyStylesheetUrl from "tippy.js/dist/tippy.css";
 import Header from "~/components/Header";
 
 export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
+  return [
+    { rel: "stylesheet", href: tailwindStylesheetUrl },
+    { rel: "stylesheet", href: tippyStylesheetUrl },
+  ];
 };
 
 export const meta: MetaFunction = () => ({

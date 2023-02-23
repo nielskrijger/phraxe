@@ -41,8 +41,7 @@ model Password {
 }
 
 enum PhraseShare {
-  PRIVATE
-  PUBLIC_OWNER
+  RESTRICTED
   PUBLIC
 }
 
@@ -65,6 +64,7 @@ model Phrase {
   source         String?
   share          PhraseShare
   favoritesCount Int        @map("favorites_count") @default(0)
+  likesTotal     Int        @map("likes_total")     @default(0)
   likesSum       Int        @map("likes_sum")       @default(0)
   likesCount     Int        @map("likes_count")     @default(0)
   createdAt      DateTime   @map("created_at")      @default(now())
@@ -78,6 +78,7 @@ model Phrase {
   messages       Message[]  @relation("Phrase")
 
   @@map("phrases")
+  @@index([likesTotal(sort: Desc)])
 }
 
 enum LikeObjectType {
@@ -95,6 +96,7 @@ model Like {
   objectType LikeObjectType
   createdAt  DateTime       @map("created_at")    @default(now())
 
+  @@unique([objectId, objectType, userId])
   @@map("likes")
 }
 

@@ -16,7 +16,6 @@ export async function createOrConnectTagsQuery(
   language: string
 ) {
   const existingTags = await findTags(tags, language);
-  console.log("existingTags", existingTags);
 
   const newTags = tags
     .filter((tag) => {
@@ -25,8 +24,6 @@ export async function createOrConnectTagsQuery(
       );
     })
     .map((tag) => ({ name: tag, language }));
-
-  console.log("newTags", newTags);
 
   return {
     create: newTags,

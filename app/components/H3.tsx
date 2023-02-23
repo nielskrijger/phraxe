@@ -6,5 +6,5 @@ type Props = {
 };
 
 export default function H3({ children }: Props) {
-  return <h3 className="pb-1 font-serif text-xl font-bold">{children}</h3>;
+  return <h3 className="font-serif text-xl font-bold">{children}</h3>;
 }

@@ -19,6 +19,7 @@ import Button from "~/components/Button";
 import Link from "~/components/Link";
 import Input from "~/components/Input";
 import { safeRedirect } from "~/utils/routing";
+import { badRequest } from "~/utils/error";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -59,7 +60,7 @@ export async function action({ request }: ActionArgs) {
   }
 
   if (Object.values(errors).some((e) => e !== null)) {
-    return json({ errors }, { status: 400 });
+    return badRequest(errors);
   }
 
   const user = await createUser(email, username, password);

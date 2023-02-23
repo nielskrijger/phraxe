@@ -2,13 +2,17 @@ import type { ReactElement } from "react";
 import React from "react";
 import { DateTime } from "luxon";
 import H3 from "~/components/H3";
-import type { Phrase as PhraseType, Tag, User } from "@prisma/client";
+import type { Phrase as PhraseType, Tag, User, Like } from "@prisma/client";
 import type { SerializeFrom } from "@remix-run/node";
 import Link from "~/components/Link";
 import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
-import Like from "~/components/Like";
+import { LikeObjectType } from "@prisma/client";
+import LikeButton from "~/components/LikeButton";
+import { PhraseShare } from ".prisma/client";
+import { Lock } from "@mui/icons-material";
+import Tippy from "@tippyjs/react";
 
 type PhraseSourceProps = { source: string | null };
 
@@ -32,18 +36,30 @@ function PhraseSource({ source }: PhraseSourceProps): ReactElement | null {
   }
 }
 
+export type PhraseContentType = SerializeFrom<PhraseType> & {
+  tags: SerializeFrom<Tag>[];
+  user: Pick<User, "username" | "usernameLower"> | null;
+  likes: SerializeFrom<Like>[];
+};
+
 type Props = {
   detail?: boolean;
-  phrase: SerializeFrom<PhraseType> & {
-    tags: SerializeFrom<Tag>[];
-    user: Pick<User, "username" | "usernameLower"> | null;
-  };
+  phrase: PhraseContentType;
 };
 
 export default function PhraseContent({ phrase, detail = false }: Props) {
   return (
     <>
-      {phrase.title && <H3>{phrase.title}</H3>}
+      {phrase.title && (
+        <div className="flex flex-row gap-2">
+          <H3>{phrase.title}</H3>
+          {phrase.share === PhraseShare.RESTRICTED && (
+            <Tippy content="Private" placement="right" delay={500}>
+              <Lock className="text-slate-300" />
+            </Tippy>
+          )}
+        </div>
+      )}
 
       <p
         className={clsx("xl:text-lg", {
@@ -55,7 +71,7 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
       </p>
 
       {detail && !!phrase.description && (
-        <div className="mt-3 mb-2">
+        <div className="mb-1">
           {/* @ts-ignore */}
           <ReactMarkdown remarkPlugins={[gfm]}>
             {phrase.description}
@@ -63,7 +79,7 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
         </div>
       )}
 
-      <div className="flex flex-row flex-wrap items-center gap-x-4 gap-x-4 gap-y-2 pt-1 pb-2">
+      <div className="grid auto-cols-max grid-cols-1 items-end gap-x-4 gap-y-3 sm:grid-cols-2">
         <div className="text-sm text-gray-400">
           {DateTime.fromJSDate(new Date(phrase.createdAt)).toRelative()} by{" "}
           {phrase.user && (
@@ -76,20 +92,29 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
           )}
           <PhraseSource source={phrase.source} />
         </div>
+
         {phrase.tags && (
-          <div className="flex grow justify-end gap-2">
+          <div className="row-span-2 flex grow gap-x-2 sm:justify-end">
             {phrase.tags.map(({ id, name }) => (
               <Link to="/" key={id}>
-                <span className="rounded-xl bg-slate-200 px-3 py-1 text-sm text-black hover:bg-indigo-200 hover:text-indigo-600">
+                <div className="rounded-xl bg-slate-200 px-3 py-1.5 text-sm text-black hover:bg-indigo-200 hover:text-indigo-600">
                   {name}
-                </span>
+                </div>
               </Link>
             ))}
           </div>
         )}
-      </div>
 
-      <Like count={phrase.likesCount} sum={phrase.likessum} />
+        {phrase.share === PhraseShare.PUBLIC && (
+          <LikeButton
+            count={phrase.likesCount}
+            sum={phrase.likesSum}
+            objectId={phrase.id}
+            objectType={LikeObjectType.PHRASE}
+            like={phrase.likes?.[0]}
+          />
+        )}
+      </div>
     </>
   );
 }

@@ -5,8 +5,7 @@ export default function SubNav() {
     <nav className="flex justify-center border-b bg-white">
       <div className="flex w-full max-w-6xl flex-row">
         <SubNavItem to="/">Home</SubNavItem>
-        <SubNavItem to="/top">Top rated</SubNavItem>
-        <SubNavItem to="/liked">Most liked</SubNavItem>
+        <SubNavItem to="/top">Top</SubNavItem>
       </div>
     </nav>
   );

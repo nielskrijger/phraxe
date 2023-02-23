@@ -1,18 +1,19 @@
 import type { ActionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import * as React from "react";
 import { uniq } from "lodash";
-import { PhraseShare } from "@prisma/client";
+import { PhraseShare, PhraseType } from "@prisma/client";
 import { createPhrase } from "~/models/phrase.server";
 import { requireUserId } from "~/session.server";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Button from "~/components/Button";
 import H1 from "~/components/H1";
 import Textarea from "~/components/Textarea";
 import TagsInput from "~/components/TagsInput";
 import Input from "~/components/Input";
 import RadioGroup from "~/components/RadioGroup";
+import { badRequest } from "~/utils/error";
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
@@ -41,7 +42,6 @@ export async function action({ request }: ActionArgs) {
     errors.text = "Text is required";
   }
 
-  console.log("share", share);
   if (share == PhraseShare.PUBLIC && tags.length === 0) {
     errors.tags = "At least one tag is required when phrase is public";
   }
@@ -59,11 +59,12 @@ export async function action({ request }: ActionArgs) {
   }
 
   if (Object.values(errors).some((e) => e !== null)) {
-    return json({ errors }, { status: 400 });
+    return badRequest(errors);
   }
 
   const phrase = await createPhrase({
     language: "en", // TODO
+    type: PhraseType.OTHER, // TODO
     userId,
     text,
     share,
@@ -134,24 +135,18 @@ export default function NewNotePage() {
         <RadioGroup
           id="share"
           label="Share"
-          value={PhraseShare.PRIVATE}
+          value={PhraseShare.PUBLIC}
           options={[
-            {
-              value: "PRIVATE",
-              title: "Private",
-              description: "Only you can view and modify the phrase.",
-            },
-            {
-              value: "OWNER_PUBLIC",
-              title: "Public, maintain ownership",
-              description:
-                "Anyone can view this but it won't show up in search results.",
-            },
             {
               value: "PUBLIC",
               title: "Public",
               description:
                 "Anyone can view and search it. After 48 hours any changes are moderated and anyone can propose changes.",
+            },
+            {
+              value: "RESTRICTED",
+              title: "Restricted",
+              description: "Only you can view and modify the phrase.",
             },
           ]}
         />

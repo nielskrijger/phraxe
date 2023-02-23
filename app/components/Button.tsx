@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { ReactNode } from "react";
 import clsx from "clsx";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@remix-run/react";
 
 type Props = {
   children: ReactNode;

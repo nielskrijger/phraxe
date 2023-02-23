@@ -11,9 +11,13 @@ type Props = {
 export default function Card({ children, onClick, className }: Props) {
   return (
     <div
-      className={clsx(className, "rounded-xl border bg-white p-3 lg:p-4", {
-        "cursor-pointer hover:border-indigo-400": onClick,
-      })}
+      className={clsx(
+        className,
+        "flex flex-col gap-2 rounded-xl border bg-white p-3 lg:p-4",
+        {
+          "cursor-pointer hover:border-indigo-400": onClick,
+        }
+      )}
       onClick={onClick}
       tabIndex={onClick ? 0 : undefined}
       role={onClick ? "link" : undefined}

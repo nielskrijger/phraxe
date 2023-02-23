@@ -10,6 +10,7 @@ import H1 from "~/components/H1";
 import Button from "~/components/Button";
 import Link from "~/components/Link";
 import Input from "~/components/Input";
+import { badRequest } from "~/utils/error";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -25,25 +26,22 @@ export async function action({ request }: ActionArgs) {
   const remember = formData.get("remember");
 
   if (typeof username !== "string" || username.length === 0) {
-    return json(
-      { errors: { username: "Email or username is invalid", password: null } },
-      { status: 400 }
-    );
+    return badRequest({
+      username: "Email or username is invalid",
+      password: null,
+    });
   }
 
   if (typeof password !== "string" || password.length === 0) {
-    return json(
-      { errors: { password: "Password is required", username: null } },
-      { status: 400 }
-    );
+    return badRequest({ password: "Password is required", username: null });
   }
 
   const user = await verifyLogin(username, password);
   if (!user) {
-    return json(
-      { errors: { username: "Invalid email or username", password: null } },
-      { status: 400 }
-    );
+    return badRequest({
+      username: "Invalid email or username",
+      password: null,
+    });
   }
 
   return createUserSession({

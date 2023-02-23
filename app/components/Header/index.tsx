@@ -19,7 +19,7 @@ export default function Header() {
           {user ? (
             <>
               <Link to="/p/new">
-                <span className="px-2 py-3 text-black hover:bg-slate-100 hover:text-gray-600 md:px-4">
+                <span className="px-2 py-3 text-black hover:bg-slate-100 hover:text-slate-600 md:px-4">
                   <span className="hidden md:inline-block">New </span>
                   <Add fontSize="large" />
                 </span>
@@ -29,7 +29,7 @@ export default function Header() {
           ) : (
             <div className="flex flex-row items-center gap-3">
               <RemixLink to="/signup">
-                <span className="px-4 py-3 text-black hover:bg-slate-100 hover:text-gray-600 ">
+                <span className="px-4 py-3 text-black hover:bg-slate-100 hover:text-slate-600 ">
                   Sign up
                 </span>
               </RemixLink>

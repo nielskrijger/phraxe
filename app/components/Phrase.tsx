@@ -1,5 +1,5 @@
 import React from "react";
-import type { Phrase as PhraseType, Tag, User } from "@prisma/client";
+import type { Like, Phrase as PhraseType, Tag, User } from "@prisma/client";
 import type { SerializeFrom } from "@remix-run/node";
 import Card from "~/components/Card";
 import { useNavigate } from "@remix-run/react";
@@ -9,6 +9,7 @@ type Props = {
   phrase: SerializeFrom<PhraseType> & {
     tags: SerializeFrom<Tag>[];
     user: Pick<User, "username" | "usernameLower"> | null;
+    likes: SerializeFrom<Like>[];
   };
 };
 

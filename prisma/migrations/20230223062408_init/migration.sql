@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('USER', 'MODERATOR', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "PhraseShare" AS ENUM ('PRIVATE', 'PUBLIC_OWNER', 'PUBLIC');
+CREATE TYPE "PhraseShare" AS ENUM ('RESTRICTED', 'PUBLIC');
 
 -- CreateEnum
 CREATE TYPE "PhraseType" AS ENUM ('CATCHPHRASE', 'PROVERB', 'QUOTATION', 'OTHER');
@@ -45,6 +45,7 @@ CREATE TABLE "phrases" (
     "source" TEXT,
     "share" "PhraseShare" NOT NULL,
     "favorites_count" INTEGER NOT NULL DEFAULT 0,
+    "likes_total" INTEGER NOT NULL DEFAULT 0,
     "likes_sum" INTEGER NOT NULL DEFAULT 0,
     "likes_count" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -57,6 +58,7 @@ CREATE TABLE "phrases" (
 -- CreateTable
 CREATE TABLE "likes" (
     "id" TEXT NOT NULL,
+    "is_dislike" BOOLEAN NOT NULL DEFAULT false,
     "user_id" TEXT NOT NULL,
     "objectId" TEXT NOT NULL,
     "objectType" "LikeObjectType" NOT NULL,
@@ -127,6 +129,12 @@ CREATE UNIQUE INDEX "users_username_lower_key" ON "users"("username_lower");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "passwords_user_id_key" ON "passwords"("user_id");
+
+-- CreateIndex
+CREATE INDEX "phrases_likes_total_idx" ON "phrases"("likes_total" DESC);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "likes_objectId_objectType_user_id_key" ON "likes"("objectId", "objectType", "user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "tags_name_language_key" ON "tags"("name", "language");

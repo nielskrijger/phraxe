@@ -45,7 +45,7 @@ export default function RadioGroup({
           Plan
         </HeadlessRadioGroup.Label>
 
-        <div className="flex flex-col gap-2 md:flex-row">
+        <div className="flex flex-col gap-2">
           {options.map(({ value, title, description }) => (
             <HeadlessRadioGroup.Option
               key={value}
