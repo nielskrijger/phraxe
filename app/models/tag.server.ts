@@ -1,9 +1,14 @@
+import diacritics from "diacritics";
 import { prisma } from "~/db.server";
 
-export async function findTags(tags: string[], language: string) {
+function findTags(tags: string[], language: string) {
   return prisma.tag.findMany({
     where: { OR: tags.map((tag) => ({ name: tag, language })) },
   });
+}
+
+export function normalizeTag(name: string) {
+  return diacritics.remove(name).toLowerCase();
 }
 
 /**
@@ -23,10 +28,40 @@ export async function createOrConnectTagsQuery(
         (e) => e.language === language && tag === e.name
       );
     })
-    .map((tag) => ({ name: tag, language }));
+    .map((tag) => ({
+      name: tag,
+      nameNormalized: normalizeTag(tag),
+      language,
+    }));
 
   return {
     create: newTags,
     connect: existingTags.map(({ id }) => ({ id })),
   };
+}
+
+export async function searchTagOptions(
+  q: string,
+  language: string,
+  maxResults: number
+) {
+  const normalized = normalizeTag(q);
+
+  // After testing with Trigram (similarity) indexes, it seems a basic LIKE is
+  // slightly faster even in data sets of over 50.000 records (2-5ms).
+  const tags = await prisma.$queryRaw<
+    { name: string; name_normalized: string }[]
+  >`
+      SELECT "name", "name_normalized"
+      FROM "tags"
+      WHERE "name_normalized" LIKE ${`%${normalized}%`}
+        AND "language" = ${language}
+      ORDER BY CASE
+         WHEN "name_normalized" LIKE ${normalized} THEN 1
+         WHEN "name_normalized" LIKE ${`${normalized}%`} THEN 2
+         ELSE length("name")
+      END
+      LIMIT ${maxResults};
+  ;`;
+  return tags.map((tag) => ({ label: tag.name, value: tag.name_normalized }));
 }

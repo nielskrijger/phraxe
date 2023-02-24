@@ -22,14 +22,6 @@ export async function getPhrase(id: string, userId?: string) {
   });
 }
 
-export function getUserPhrases({ userId }: { userId: User["id"] }) {
-  return prisma.phrase.findMany({
-    where: { userId },
-    select: { id: true, text: true },
-    orderBy: { updatedAt: "desc" },
-  });
-}
-
 const nanoid = customAlphabet(
   "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
   10
@@ -81,7 +73,7 @@ export async function createPhrase({
 
 export function getPhrases(
   where: PhraseWhereInput,
-  orderBy: "createdAt" | "likesSum",
+  orderBy: "createdAt" | "likesTotal",
   take: number,
   skip: number,
   userId?: string

@@ -12,7 +12,7 @@ type DeleteDislike = { type: LikeAction.DeleteDislike };
 
 export type LikeState = {
   count: number;
-  sum: number;
+  total: number;
   isLiked: boolean | null; // null indicates no like
 };
 
@@ -31,7 +31,7 @@ export function likeReducer(
         return {
           ...state,
           count: state.count + 1,
-          sum: state.sum + 1,
+          total: state.total + 1,
           isLiked: true,
         };
       }
@@ -39,7 +39,7 @@ export function likeReducer(
       // Change dislike to like
       return {
         ...state,
-        sum: state.sum + 1,
+        total: state.total + 2,
         isLiked: true,
       };
     // Remove like
@@ -47,7 +47,7 @@ export function likeReducer(
       return {
         ...state,
         count: state.count - 1,
-        sum: state.sum - 1,
+        total: state.total - 1,
         isLiked: null,
       };
     case LikeAction.Dislike:
@@ -56,6 +56,7 @@ export function likeReducer(
         return {
           ...state,
           count: state.count + 1,
+          total: state.total - 1,
           isLiked: false,
         };
       }
@@ -63,7 +64,7 @@ export function likeReducer(
       // Change like to dislike
       return {
         ...state,
-        sum: state.sum - 1,
+        total: state.total - 2,
         isLiked: false,
       };
     // Remove dislike
@@ -71,6 +72,7 @@ export function likeReducer(
       return {
         ...state,
         count: state.count - 1,
+        total: state.total + 1,
         isLiked: null,
       };
     default:

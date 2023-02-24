@@ -17,7 +17,7 @@ type Props = {
 // Use important due to https://github.com/AdeleD/react-paginate/issues/430
 const activeClass = "font-bold bg-slate-200";
 const inActiveClass =
-  "border border-transparent hover:text-indigo-600 hover:bg-indigo-200 hover:text-indigo-600 py-1 px-2";
+  "border border-transparent hover:text-indigo-600 hover:bg-indigo-100 hover:text-indigo-600 py-1 px-2";
 
 export default function PhraseList({ phrases, count, skip }: Props) {
   const { pathname, search } = useLocation();

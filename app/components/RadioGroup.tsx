@@ -58,7 +58,7 @@ export default function RadioGroup({
               }
             >
               {({ checked }) => (
-                <div className="flex flex-col">
+                <div className="flex cursor-pointer flex-col">
                   <HeadlessRadioGroup.Label
                     className={clsx("font-bold text-gray-900", {
                       "text-indigo-700": checked,

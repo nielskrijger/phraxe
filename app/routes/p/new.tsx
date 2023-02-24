@@ -2,23 +2,28 @@ import type { ActionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import * as React from "react";
+import XRegExp from "xregexp";
 import { uniq } from "lodash";
 import { PhraseShare, PhraseType } from "@prisma/client";
 import { createPhrase } from "~/models/phrase.server";
 import { requireUserId } from "~/session.server";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Button from "~/components/Button";
 import H1 from "~/components/H1";
 import Textarea from "~/components/Textarea";
-import TagsInput from "~/components/TagsInput";
+import TagsSelect from "~/components/Select/TagsSelect";
 import Input from "~/components/Input";
 import RadioGroup from "~/components/RadioGroup";
 import { badRequest } from "~/utils/error";
+import { useSubmit } from "@remix-run/react";
+import LanguageSelect from "~/components/Select/LanguageSelect";
+import { findSupportedLanguage } from "~/utils/language";
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
 
   const formData = await request.formData();
+  const language = formData.get("language") as string;
   const text = formData.get("text") as string;
   const description = formData.get("description") as string;
   const attribution = formData.get("attribution") as string;
@@ -34,9 +39,14 @@ export async function action({ request }: ActionArgs) {
   );
 
   const errors = {
+    language: null as null | string,
     text: null as null | string,
     tags: null as null | string,
   };
+
+  if (findSupportedLanguage(language)) {
+    errors.language = "Language not supported";
+  }
 
   if (text.length === 0) {
     errors.text = "Text is required";
@@ -50,7 +60,7 @@ export async function action({ request }: ActionArgs) {
     errors.tags = "Max 3 tags allowed";
   }
 
-  if (!tags.every((tag) => /^[\w ]+$/.test(tag))) {
+  if (!tags.every((tag) => XRegExp("^[\\p{L} ]+$").test(tag))) {
     errors.tags = "Can only contain letters and space(s)";
   }
 
@@ -63,7 +73,7 @@ export async function action({ request }: ActionArgs) {
   }
 
   const phrase = await createPhrase({
-    language: "en", // TODO
+    language: "english", // TODO
     type: PhraseType.OTHER, // TODO
     userId,
     text,
@@ -85,8 +95,10 @@ export const meta: MetaFunction = () => {
 };
 
 export default function NewNotePage() {
+  const submit = useSubmit();
   const actionData = useActionData<typeof action>();
   const textRef = useRef<HTMLTextAreaElement>(null);
+  const [language, setLanguage] = useState<string>("english");
 
   useEffect(() => {
     if (actionData?.errors?.text) {
@@ -96,14 +108,28 @@ export default function NewNotePage() {
 
   return (
     <div className="my-2 px-3 lg:px-0">
-      <Form method="post" className="flex flex-col gap-2" noValidate>
+      <Form
+        method="post"
+        className="flex flex-col gap-2"
+        noValidate
+        onSubmit={(e) => {
+          // prevent input "enter" from submitting the form
+          e.preventDefault();
+        }}
+      >
         <H1 className="pb-0">Add phrase</H1>
+
+        <LanguageSelect
+          id="language"
+          label="Language"
+          error={actionData?.errors?.language}
+          onChange={(newValue) => setLanguage(newValue?.value ?? "english")}
+        />
 
         <Input
           label="Title"
           placeholder="Murphy's Law"
           id="title"
-          autoFocus={true}
           description="What the phrase is commonly referred as, otherwise leave empty"
         />
 
@@ -121,10 +147,15 @@ export default function NewNotePage() {
         <Input
           label="Attributed to"
           id="attribution"
-          placeholder="Captain Edward Murphy"
+          placeholder="Edward Murphy"
         />
 
-        <TagsInput id="tags" label="Tags" error={actionData?.errors?.tags} />
+        <TagsSelect
+          id="tags"
+          label="Tags"
+          error={actionData?.errors?.tags}
+          language={language}
+        />
 
         <Input
           label="Source"
@@ -152,7 +183,15 @@ export default function NewNotePage() {
         />
 
         <div className="mt-2">
-          <Button>Create</Button>
+          <Button
+            onClick={(e) =>
+              // submit programmatically which avoid <enter> from submitting the form instead
+              submit(e.target as HTMLButtonElement, { replace: true })
+            }
+            type="button"
+          >
+            Create
+          </Button>
         </div>
       </Form>
     </div>

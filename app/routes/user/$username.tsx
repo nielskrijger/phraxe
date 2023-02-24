@@ -1,6 +1,10 @@
 import type { LoaderArgs, MetaFunction, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useCatch, useLoaderData } from "@remix-run/react";
+import {
+  ShouldRevalidateFunction,
+  useCatch,
+  useLoaderData,
+} from "@remix-run/react";
 import React from "react";
 import { getPhrases } from "~/models/phrase.server";
 import { getUserId, requireUser } from "~/session.server";
@@ -55,6 +59,12 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
     title: data?.username ?? "Not found",
   };
 };
+
+export function shouldRevalidate({
+  formAction,
+}: Parameters<ShouldRevalidateFunction>[0]) {
+  return formAction !== "/like"; // prevent likes from triggering a refetch
+}
 
 export default function Index() {
   const data = useLoaderData<LoaderData>();

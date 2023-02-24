@@ -36,12 +36,10 @@ export async function upsertLike(
         }
 
         // Determine delta
-        let sumDelta = like.isDislike ? 0 : 1;
         let countDelta = 1;
         let totalDelta = like.isDislike ? -1 : 1;
         if (existing) {
           countDelta = 0;
-          sumDelta = like.isDislike ? -1 : 1;
           totalDelta = like.isDislike ? -2 : 2;
         }
 
@@ -54,9 +52,6 @@ export async function upsertLike(
             data: {
               likesTotal: {
                 increment: totalDelta,
-              },
-              likesSum: {
-                increment: sumDelta,
               },
               likesCount: {
                 increment: countDelta,
@@ -96,8 +91,8 @@ export async function deleteLike(
               id: deleted.objectId,
             },
             data: {
-              likesSum: {
-                increment: deleted.isDislike ? 0 : -1,
+              likesTotal: {
+                increment: deleted.isDislike ? 1 : -1,
               },
               likesCount: {
                 increment: -1,

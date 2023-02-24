@@ -46,7 +46,6 @@ CREATE TABLE "phrases" (
     "share" "PhraseShare" NOT NULL,
     "favorites_count" INTEGER NOT NULL DEFAULT 0,
     "likes_total" INTEGER NOT NULL DEFAULT 0,
-    "likes_sum" INTEGER NOT NULL DEFAULT 0,
     "likes_count" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -93,6 +92,7 @@ CREATE TABLE "tags" (
     "id" TEXT NOT NULL,
     "language" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "name_normalized" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "tags_pkey" PRIMARY KEY ("id")
@@ -137,7 +137,7 @@ CREATE INDEX "phrases_likes_total_idx" ON "phrases"("likes_total" DESC);
 CREATE UNIQUE INDEX "likes_objectId_objectType_user_id_key" ON "likes"("objectId", "objectType", "user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "tags_name_language_key" ON "tags"("name", "language");
+CREATE UNIQUE INDEX "tags_name_normalized_language_key" ON "tags"("name_normalized", "language");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_PhraseToTag_AB_unique" ON "_PhraseToTag"("A", "B");

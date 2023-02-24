@@ -1,13 +1,14 @@
 import * as React from "react";
-import type { ReactNode } from "react";
+import type { ButtonHTMLAttributes, MouseEventHandler, ReactNode } from "react";
 import clsx from "clsx";
 import { useNavigate } from "@remix-run/react";
 
-type Props = {
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   to?: string;
   fullWidth?: boolean;
   className?: string;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 };
 
 export default function Button({
@@ -15,18 +16,23 @@ export default function Button({
   className,
   to,
   fullWidth = false,
+  onClick,
+  ...props
 }: Props) {
   const navigate = useNavigate();
 
   return (
     <button
-      type={to ? "button" : "submit"}
-      onClick={to ? () => navigate(to) : undefined}
+      type={to || onClick ? "button" : "submit"}
+      onClick={to ? () => navigate(to) : onClick}
+      name="submitName"
+      value="submitValue"
       className={clsx(
         className,
         "rounded-full bg-black py-2 px-6 text-white hover:bg-gray-600 focus:bg-gray-500",
         { "w-full": fullWidth }
       )}
+      {...props}
     >
       {children}
     </button>

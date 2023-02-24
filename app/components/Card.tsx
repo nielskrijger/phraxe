@@ -14,9 +14,7 @@ export default function Card({ children, onClick, className }: Props) {
       className={clsx(
         className,
         "flex flex-col gap-2 rounded-xl border bg-white p-3 lg:p-4",
-        {
-          "cursor-pointer hover:border-indigo-400": onClick,
-        }
+        { "cursor-pointer hover:border-indigo-300": onClick }
       )}
       onClick={onClick}
       tabIndex={onClick ? 0 : undefined}

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { kebabCase, startCase } from "lodash";
 import { slugify } from "~/utils/slugify";
 import { faker } from "@faker-js/faker";
+import diacritics from "diacritics";
 
 const prisma = new PrismaClient();
 
@@ -62,7 +63,7 @@ async function seed() {
       id: "phrase-1",
       slug: kebabCase("Gall's Law"),
       type: PhraseType.QUOTATION,
-      language: "en",
+      language: "english",
       share: PhraseShare.PUBLIC,
       title: "Gall's Law",
       text: "A complex system that works is invariably found to have evolved from a simple system that worked. The inverse proposition also appears to be true: A complex system designed from scratch never works and cannot be made to work. You have to start over, beginning with a working simple system.",
@@ -73,8 +74,8 @@ async function seed() {
       userId: john.id,
       tags: {
         create: [
-          { name: "Software", language: "en" },
-          { name: "Laws", language: "en" },
+          { name: "Software", nameNormalized: "software", language: "english" },
+          { name: "Law", nameNormalized: "Law", language: "english" },
         ],
       },
     },
@@ -85,7 +86,7 @@ async function seed() {
       id: "phrase-2",
       type: PhraseType.OTHER,
       slug: kebabCase("Screw motivation, what you need is discipline."),
-      language: "en",
+      language: "english",
       share: PhraseShare.RESTRICTED,
       title: "PRIVATE PHRASE",
       text: "Screw motivation, what you need is discipline.",
@@ -94,8 +95,16 @@ async function seed() {
       userId: john.id,
       tags: {
         create: [
-          { name: "Motivation", language: "en" },
-          { name: "Discipline", language: "en" },
+          {
+            name: "Motivation",
+            nameNormalized: "motivation",
+            language: "english",
+          },
+          {
+            name: "Discipline",
+            nameNormalized: "discipline",
+            language: "english",
+          },
         ],
       },
     },
@@ -106,7 +115,7 @@ async function seed() {
       id: "phrase-3",
       type: PhraseType.PROVERB,
       slug: kebabCase("Birds of a feather flock together."),
-      language: "en",
+      language: "english",
       share: PhraseShare.RESTRICTED,
       title: "PUBLIC-OWNER PHRASE",
       text: "Birds of a feather flock together.",
@@ -114,13 +123,19 @@ async function seed() {
         "People of the same sort or with the same tastes and interests will be found together.",
       userId: john.id,
       tags: {
-        create: [{ name: "Interests", language: "en" }],
+        create: [
+          {
+            name: "Interests",
+            nameNormalized: "interests",
+            language: "english",
+          },
+        ],
       },
     },
   });
 
   const softwareTag = await prisma.tag.findFirst({
-    where: { name: "Software", language: "en" },
+    where: { name: "Software", language: "english" },
   });
 
   await prisma.phrase.create({
@@ -128,7 +143,7 @@ async function seed() {
       id: "phrase-4",
       type: PhraseType.QUOTATION,
       slug: slugify("Conway's Law"),
-      language: "en",
+      language: "english",
       share: PhraseShare.PUBLIC,
       title: "Conway's Law",
       text: "Any organization that designs a system (defined broadly) will produce a design whose structure is a copy of the organization's communication structure.",
@@ -137,7 +152,13 @@ async function seed() {
       attribution: "Melvin Conway",
       userId: john.id,
       tags: {
-        create: [{ name: "Organization", language: "en" }],
+        create: [
+          {
+            name: "Organization",
+            nameNormalized: "organization",
+            language: "english",
+          },
+        ],
         connect: [{ id: softwareTag?.id }],
       },
     },
@@ -150,14 +171,14 @@ async function seed() {
       slug: slugify(
         "We laten de kwaliteit van de dag afhangen van hoe goed we hebben geslapen, i.p.v. dat de kwaliteit van de dag bepaalt hoe we slapen."
       ),
-      language: "nl",
+      language: "dutch",
       share: PhraseShare.PUBLIC,
       text: "We laten de kwaliteit van de dag afhangen van hoe goed we hebben geslapen, i.p.v. dat de kwaliteit van de dag bepaalt hoe we slapen.",
       userId: john.id,
       tags: {
         create: [
-          { name: "Slaap", language: "nl" },
-          { name: "Geluk", language: "nl" },
+          { name: "Slaap", nameNormalized: "slaap", language: "dutch" },
+          { name: "Geluk", nameNormalized: "geluk", language: "dutch" },
         ],
       },
     },
@@ -170,13 +191,13 @@ async function seed() {
       slug: slugify(
         "Spread love everywhere you go. Let no one ever come to you without leaving happier."
       ),
-      language: "en",
+      language: "english",
       share: PhraseShare.PUBLIC,
       text: "Spread love everywhere you go. Let no one ever come to you without leaving happier.",
       attribution: "Mother Teresa",
       userId: jane.id,
       tags: {
-        create: [{ name: "Love", language: "en" }],
+        create: [{ name: "Love", nameNormalized: "love", language: "english" }],
       },
     },
   });
@@ -186,15 +207,15 @@ async function seed() {
       id: "phrase-7",
       type: PhraseType.QUOTATION,
       slug: slugify("Life is a long lesson in humility"),
-      language: "en",
+      language: "english",
       share: PhraseShare.PUBLIC,
       text: "Life is a long lesson in humility",
       attribution: "James M. Barrie",
       userId: jane.id,
       tags: {
         create: [
-          { name: "Life", language: "en" },
-          { name: "Humility", language: "en" },
+          { name: "Life", nameNormalized: "life", language: "english" },
+          { name: "Humility", nameNormalized: "humility", language: "english" },
         ],
       },
     },
@@ -205,7 +226,7 @@ async function seed() {
       id: "phrase-8",
       type: PhraseType.OTHER,
       slug: slugify("Markdown"),
-      language: "en",
+      language: "english",
       share: PhraseShare.PUBLIC,
       title: "Markdown",
       text: "This phrase has a markdown description",
@@ -223,11 +244,14 @@ A table:
 | - | - |`,
       userId: jane.id,
       tags: {
-        create: [{ name: "Markdown", language: "en" }],
+        create: [
+          { name: "Markdown", nameNormalized: "markdown", language: "english" },
+        ],
       },
     },
   });
 
+  // Generate a bunch of auto generated phrases with a create date in the past.
   for (let i = 0; i < 1000; i++) {
     // Create tag(s) if needed
     const connect = [];
@@ -235,12 +259,20 @@ A table:
     for (let i = 0; i < numTags; i++) {
       const name = faker.hacker.noun();
       let tag = await prisma.tag.findFirst({
-        where: { name, language: "en" },
+        where: { name: startCase(name), language: "english" },
       });
       if (!tag) {
-        await prisma.tag.create({ data: { name, language: "en" } });
+        await prisma.tag.create({
+          data: {
+            name: startCase(name),
+            nameNormalized: diacritics.remove(name).toLowerCase(),
+            language: "english",
+          },
+        });
       }
-      tag = await prisma.tag.findFirst({ where: { name, language: "en" } });
+      tag = await prisma.tag.findFirst({
+        where: { name: startCase(name), language: "english" },
+      });
       if (tag === null) {
         throw new Error("Failed to create tag");
       }
@@ -254,7 +286,7 @@ A table:
           Object.values(PhraseType)
         ) as PhraseType,
         slug: slugify("Markdown"),
-        language: "en",
+        language: "english",
         share: PhraseShare.PUBLIC,
         title:
           faker.datatype.number(1) > 0 // 50% chance of separate title
@@ -272,6 +304,26 @@ A table:
         tags: {
           connect,
         },
+      },
+    });
+  }
+
+  // Generate a bunch of tags
+  const tags = new Set<string>();
+  while (tags.size < 10000) {
+    tags.add(faker.random.word());
+  }
+  for (const name of tags) {
+    const nameNormalized = diacritics.remove(name).toLowerCase();
+    await prisma.tag.upsert({
+      where: {
+        nameNormalized_language: { nameNormalized, language: "english" },
+      },
+      update: {},
+      create: {
+        name: startCase(name),
+        nameNormalized,
+        language: "english",
       },
     });
   }

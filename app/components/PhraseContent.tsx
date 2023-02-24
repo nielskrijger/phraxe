@@ -48,6 +48,7 @@ type Props = {
 };
 
 export default function PhraseContent({ phrase, detail = false }: Props) {
+  const hasTags = phrase.tags.length > 0;
   return (
     <>
       {phrase.title && (
@@ -79,7 +80,12 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
         </div>
       )}
 
-      <div className="grid auto-cols-max grid-cols-1 items-end gap-x-4 gap-y-3 sm:grid-cols-2">
+      <div
+        className={clsx(
+          "grid auto-cols-max grid-cols-1 items-end gap-x-4 gap-y-3",
+          { "sm:grid-cols-2": hasTags } // on large screens shows tags on right side
+        )}
+      >
         <div className="text-sm text-gray-400">
           {DateTime.fromJSDate(new Date(phrase.createdAt)).toRelative()} by{" "}
           {phrase.user && (
@@ -93,11 +99,16 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
           <PhraseSource source={phrase.source} />
         </div>
 
-        {phrase.tags && (
-          <div className="row-span-2 flex grow gap-x-2 sm:justify-end">
+        {hasTags && (
+          <div
+            className={clsx(
+              "row-span-2 flex grow gap-x-2 sm:flex sm:justify-end",
+              { hidden: !detail } // in detail view always show tags, in list view hide them on small screens
+            )}
+          >
             {phrase.tags.map(({ id, name }) => (
               <Link to="/" key={id}>
-                <div className="rounded-xl bg-slate-200 px-3 py-1.5 text-sm text-black hover:bg-indigo-200 hover:text-indigo-600">
+                <div className="rounded-xl bg-slate-100 px-3 py-1.5 text-sm text-black hover:bg-indigo-100 hover:text-indigo-600">
                   {name}
                 </div>
               </Link>
@@ -107,8 +118,8 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
 
         {phrase.share === PhraseShare.PUBLIC && (
           <LikeButton
+            total={phrase.likesTotal}
             count={phrase.likesCount}
-            sum={phrase.likesSum}
             objectId={phrase.id}
             objectType={LikeObjectType.PHRASE}
             like={phrase.likes?.[0]}

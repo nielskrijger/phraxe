@@ -10,7 +10,7 @@ export default function Header() {
   const user = useOptionalUser();
   return (
     <>
-      <header className="flex h-[50px] items-center justify-between border-b bg-white px-3 lg:px-5">
+      <header className="flex h-[50px] items-center justify-between bg-white px-3 lg:px-5">
         <RemixLink to="/" className="font-serif text-2xl font-bold">
           phraXe
         </RemixLink>
