@@ -11,16 +11,17 @@ type Props = {
     user: Pick<User, "username" | "usernameLower"> | null;
     likes: SerializeFrom<Like>[];
   };
+  highlightWords?: string[];
 };
 
-export default function Phrase({ phrase }: Props) {
+export default function Phrase({ phrase, highlightWords }: Props) {
   const navigate = useNavigate();
   return (
     <Card
       key={phrase.id}
       onClick={() => navigate(`/p/${phrase.id}/${phrase.slug}`)}
     >
-      <PhraseContent phrase={phrase} />
+      <PhraseContent phrase={phrase} highlightWords={highlightWords} />
     </Card>
   );
 }

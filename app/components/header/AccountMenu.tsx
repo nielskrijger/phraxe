@@ -2,15 +2,19 @@ import { Menu, Transition } from "@headlessui/react";
 import { useUser } from "~/utils/user";
 import { Form } from "@remix-run/react";
 
-export default function AccountMenu() {
+type Props = {
+  className?: string;
+};
+
+export default function AccountMenu({ className }: Props) {
   const user = useUser();
   return (
-    <div className="relative z-50 inline-block text-left">
+    <div className={className}>
       <Menu>
         {({ open }) => (
           <>
             <span className="">
-              <Menu.Button className="inline-flex px-4 py-3 font-bold leading-5 hover:bg-slate-100 hover:text-gray-600">
+              <Menu.Button className="inline-flex px-4 py-3 font-bold leading-5 hover:bg-slate-100 hover:text-slate-600">
                 <span>{user.username}</span>
                 <svg
                   className="ml-2 -mr-1 h-5 w-5"
@@ -37,11 +41,11 @@ export default function AccountMenu() {
             >
               <Menu.Items
                 static
-                className="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md border border-gray-200 bg-white shadow-lg outline-none"
+                className="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-slate-100 rounded-md border border-slate-200 bg-white shadow-lg outline-none"
               >
                 <div className="px-4 py-3">
                   <p className="text-sm leading-5">Signed in as</p>
-                  <p className="truncate font-medium leading-5 text-gray-900">
+                  <p className="truncate font-medium leading-5 text-slate-900">
                     {user.email}
                   </p>
                 </div>
@@ -52,7 +56,9 @@ export default function AccountMenu() {
                       <a
                         href="/user/self"
                         className={`${
-                          active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          active
+                            ? "bg-slate-100 text-slate-900"
+                            : "text-slate-700"
                         } flex w-full justify-between px-4 py-2 text-left leading-5`}
                       >
                         My phrases
@@ -69,8 +75,8 @@ export default function AccountMenu() {
                           type="submit"
                           className={`${
                             active
-                              ? "bg-gray-100 text-gray-900"
-                              : "text-gray-700"
+                              ? "bg-slate-100 text-slate-900"
+                              : "text-slate-700"
                           } flex w-full justify-between px-4 py-2 text-left leading-5`}
                         >
                           Sign out

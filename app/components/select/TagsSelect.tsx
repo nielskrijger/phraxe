@@ -3,8 +3,8 @@ import AsyncCreatableSelect from "react-select/async-creatable";
 import InputGroup from "~/components/InputGroup";
 import { uniqBy } from "lodash";
 import { useFetcher } from "@remix-run/react";
-import type { OptionType } from "~/components/Select/Select";
-import { selectStyles } from "~/components/Select/Select";
+import type { OptionType } from "~/components/select/Select";
+import { selectStyles } from "~/components/select/Select";
 import type { GroupBase } from "react-select/dist/declarations/src/types";
 
 type Props = {
@@ -25,10 +25,10 @@ export default function TagsSelect({ error, id, label, language }: Props) {
     inputValue: string,
     callback: (options: OptionType[]) => void
   ) => {
-    const search = new URLSearchParams();
-    search.set("q", inputValue);
-    search.set("language", language);
-    fetcher.load(`/tags?${search.toString()}`);
+    const params = new URLSearchParams();
+    params.set("q", inputValue);
+    params.set("language", language);
+    fetcher.load(`/tags?${params.toString()}`);
     callbackRef.current = callback;
   };
 

@@ -71,7 +71,7 @@ export async function createPhrase({
   });
 }
 
-export function getPhrases(
+export function getPhrasesAndCount(
   where: PhraseWhereInput,
   orderBy: "createdAt" | "likesTotal",
   take: number,
@@ -79,25 +79,35 @@ export function getPhrases(
   userId?: string
 ) {
   return Promise.all([
-    prisma.phrase.findMany({
-      take,
-      skip,
-      where,
-      include: {
-        user: {
-          select: {
-            username: true,
-            usernameLower: true,
-          },
-        },
-        tags: true,
-        likes: userId ? { where: { userId } } : false,
-      },
-      orderBy: [{ [orderBy]: "desc" }],
-    }),
+    getPhrases(where, orderBy, take, skip, userId),
     prisma.phrase.count({ where }),
     skip,
   ]);
+}
+
+export function getPhrases(
+  where: PhraseWhereInput,
+  orderBy: "createdAt" | "likesTotal",
+  take: number,
+  skip: number,
+  userId?: string
+) {
+  return prisma.phrase.findMany({
+    take,
+    skip,
+    where,
+    include: {
+      user: {
+        select: {
+          username: true,
+          usernameLower: true,
+        },
+      },
+      tags: true,
+      likes: userId ? { where: { userId } } : false,
+    },
+    orderBy: [{ [orderBy]: "desc" }],
+  });
 }
 
 export function deletePhrase({
@@ -107,4 +117,61 @@ export function deletePhrase({
   return prisma.phrase.deleteMany({
     where: { id, userId },
   });
+}
+
+export type PhraseSearchResult = Pick<
+  Phrase,
+  "id" | "title" | "slug" | "text"
+> & { rank: number };
+
+/**
+ * Applies a websearch query and treats the last word as a partial match.
+ */
+export async function searchPhrases(
+  q: string,
+  languages: string[],
+  take: number,
+  skip: number
+) {
+  // Based on https://stackoverflow.com/a/74255689/2044661
+  return prisma.$queryRaw<PhraseSearchResult[]>`
+      SELECT p.id, p.slug, p.title, p.text,
+         ts_rank(p.searchable, to_tsquery(
+             lang_to_regconfig(p."language"),
+             websearch_to_tsquery(lang_to_regconfig(p."language"), ${q})::text || ':*'
+         )) AS rank
+      FROM "phrases" AS p
+      WHERE p.language IN (${Prisma.join(languages)})
+        AND p.share = 'PUBLIC'
+
+        -- numnode prevents errors when websearch_to_tsquery removes all search 
+        -- terms (like "in", "the", etc) resulting in an empty ":*"
+        AND numnode(websearch_to_tsquery(lang_to_regconfig(p."language"), ${q})) > 0 
+        AND p.searchable @@ to_tsquery(
+            lang_to_regconfig(p."language"),
+            websearch_to_tsquery(lang_to_regconfig(p."language"), ${q})::text || ':*'
+        )
+      ORDER BY rank DESC
+      LIMIT ${take}
+      OFFSET ${skip}`;
+}
+
+/**
+ * Returns the number of records that match a search query.
+ */
+export async function searchPhrasesCount(q: string, languages: string[]) {
+  const count = await prisma.$queryRaw<{ count: BigInteger }[]>`
+      SELECT count(*) AS count
+      FROM "phrases" AS p
+      WHERE p.language IN (${Prisma.join(languages)})
+        AND p.share = 'PUBLIC'
+        AND numnode(websearch_to_tsquery(lang_to_regconfig(p."language"), ${q})) > 0
+        AND p.searchable @@ to_tsquery(
+              lang_to_regconfig(p."language"),
+              websearch_to_tsquery(lang_to_regconfig(p."language"), ${q})::text || ':*'
+          )`;
+
+  // The count(*) function returns a BigInt, so we convert it to a Number data
+  // type, which can be serialized over JSON.
+  return Number(count[0].count);
 }

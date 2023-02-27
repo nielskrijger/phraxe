@@ -24,7 +24,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
           aria-invalid={error ? true : undefined}
           aria-describedby={`${id}-error`}
           className={clsx(
-            "mb-1 w-full rounded-md border border-slate-400 p-2 outline-0 hover:border-indigo-400 focus:border-indigo-600 focus:bg-indigo-50",
+            "mb-1 w-full rounded-md border border-slate-400 p-2 outline-0 hover:border-indigo-400 focus:border-primary focus:bg-indigo-50",
             { "border-red-600": !!error }
           )}
           {...props}

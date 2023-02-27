@@ -11,7 +11,7 @@ import {
 } from "@remix-run/react";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import tippyStylesheetUrl from "tippy.js/dist/tippy.css";
-import Header from "~/components/Header";
+import Header from "~/components/header/Header";
 import { LanguageProvider, parseAcceptLanguage } from "~/utils/language";
 import { getUser } from "~/session.server";
 

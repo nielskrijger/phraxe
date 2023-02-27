@@ -20,7 +20,7 @@ export default function Link({ to, children, isExternal = false }: Props) {
         href={to}
         target="_blank"
         rel="noreferrer"
-        className="text-indigo-600 hover:text-black"
+        className="text-primary hover:text-black"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -31,7 +31,7 @@ export default function Link({ to, children, isExternal = false }: Props) {
   return (
     <RemixLink
       to={to}
-      className="text-indigo-600 hover:text-black"
+      className="text-primary hover:text-black"
       onClick={(e) => e.stopPropagation()}
     >
       {children}

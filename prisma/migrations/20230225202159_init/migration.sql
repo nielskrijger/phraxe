@@ -50,6 +50,7 @@ CREATE TABLE "phrases" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "user_id" TEXT,
+    "searchable" tsvector DEFAULT ''::tsvector,
 
     CONSTRAINT "phrases_pkey" PRIMARY KEY ("id")
 );
@@ -132,6 +133,9 @@ CREATE UNIQUE INDEX "passwords_user_id_key" ON "passwords"("user_id");
 
 -- CreateIndex
 CREATE INDEX "phrases_likes_total_idx" ON "phrases"("likes_total" DESC);
+
+-- CreateIndex
+CREATE INDEX "phrases_searchable_idx" ON "phrases" USING GIN ("searchable");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "likes_objectId_objectType_user_id_key" ON "likes"("objectId", "objectType", "user_id");

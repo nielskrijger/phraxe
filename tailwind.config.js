@@ -6,8 +6,16 @@ module.exports = {
   content: ["./app/**/*.{ts,tsx,jsx,js}"],
   theme: {
     colors: {
-      ghostBlue: "#f8f9fc",
       ...colors,
+      ghostBlue: "#f8f9fc",
+      slate: {
+        ...colors.slate,
+        100: "#EDEFF8", // increase contrast between 50 and 100
+      },
+
+      // white theme
+      border: "#EDEFF8",
+      primary: "#4f46e5",
     },
     extend: {
       fontFamily: {
@@ -16,5 +24,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/line-clamp")],
 };

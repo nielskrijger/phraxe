@@ -3,23 +3,23 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useLoaderData } from "@remix-run/react";
 import { PhraseShare } from "@prisma/client";
 import React from "react";
-import { getPhrases } from "~/models/phrase.server";
-import H4 from "~/components/H4";
+import { getPhrasesAndCount } from "~/models/phrase.server";
 import type { LoaderArgs } from "@remix-run/server-runtime";
 import { getUserId } from "~/session.server";
 import PhraseList from "~/components/PhraseList";
 import getPageSkip from "~/utils/pagination";
 import H2 from "~/components/H2";
-
-const itemsPerPage = 12;
+import { ITEMS_PER_PAGE } from "~/constants";
+import { getPreferredLanguages } from "~/utils/language";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
-  const [phrases, count] = await getPhrases(
-    { share: PhraseShare.PUBLIC },
+  const languages = getPreferredLanguages(request);
+  const [phrases, count] = await getPhrasesAndCount(
+    { share: PhraseShare.PUBLIC, language: { in: languages } },
     "createdAt",
-    itemsPerPage,
-    getPageSkip(request, itemsPerPage),
+    ITEMS_PER_PAGE,
+    getPageSkip(request, ITEMS_PER_PAGE),
     userId
   );
   return json({ phrases, count });
@@ -40,7 +40,7 @@ export default function Index() {
       <PhraseList
         phrases={data.phrases}
         count={data.count}
-        skip={itemsPerPage}
+        skip={ITEMS_PER_PAGE}
       />
     </main>
   );

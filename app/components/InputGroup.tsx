@@ -20,7 +20,7 @@ export default function InputGroup({
     <div className="mt-1 flex w-full flex-col">
       <label
         htmlFor={id}
-        className="mb-1 block text-sm font-medium text-gray-700"
+        className="mb-1 block text-sm font-medium text-slate-700"
       >
         {label}
       </label>

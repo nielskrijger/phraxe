@@ -76,8 +76,14 @@ model Phrase {
   listItems      ListItem[]
   messages       Message[]  @relation("Phrase")
 
+  // Prisma will delete the searchable column because it's "GENERATED AS",
+  // so instead of using "GENERATED AS" we use a trigger to update it.
+  // See https://github.com/prisma/prisma/issues/15654#issuecomment-1267235883
+  searchable     Unsupported("tsvector")? @default(dbgenerated("''::tsvector"))
+
   @@map("phrases")
   @@index([likesTotal(sort: Desc)])
+  @@index([searchable], type: Gin)
 }
 
 enum LikeObjectType {

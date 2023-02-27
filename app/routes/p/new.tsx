@@ -11,12 +11,12 @@ import { useEffect, useRef, useState } from "react";
 import Button from "~/components/Button";
 import H1 from "~/components/H1";
 import Textarea from "~/components/Textarea";
-import TagsSelect from "~/components/Select/TagsSelect";
+import TagsSelect from "~/components/select/TagsSelect";
 import Input from "~/components/Input";
 import RadioGroup from "~/components/RadioGroup";
 import { badRequest } from "~/utils/error";
 import { useSubmit } from "@remix-run/react";
-import LanguageSelect from "~/components/Select/LanguageSelect";
+import LanguageSelect from "~/components/select/LanguageSelect";
 import { findSupportedLanguage } from "~/utils/language";
 
 export async function action({ request }: ActionArgs) {
@@ -44,7 +44,7 @@ export async function action({ request }: ActionArgs) {
     tags: null as null | string,
   };
 
-  if (findSupportedLanguage(language)) {
+  if (!findSupportedLanguage(language)) {
     errors.language = "Language not supported";
   }
 
@@ -73,7 +73,7 @@ export async function action({ request }: ActionArgs) {
   }
 
   const phrase = await createPhrase({
-    language: "english", // TODO
+    language,
     type: PhraseType.OTHER, // TODO
     userId,
     text,

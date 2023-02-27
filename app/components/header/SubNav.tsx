@@ -1,4 +1,4 @@
-import SubNavItem from "~/components/Header/SubNavItem";
+import SubNavItem from "~/components/header/SubNavItem";
 
 export default function SubNav() {
   return (

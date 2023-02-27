@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
 import type { Language } from "accept-language-parser";
 import acceptLanguage from "accept-language-parser";
+import { uniq } from "lodash";
 
 export type SupportedLanguage = {
   name: string;
@@ -59,30 +60,22 @@ export function LanguageProvider({
 }
 
 /**
- * Returns the languages from the "Accept-Language" header.
+ * Returns the languages from the "Accept-Language" header that are stored in
+ * the context.
  */
 export function useAcceptLanguages() {
   return useContext(LocaleContext);
 }
 
-export function usePreferredLanguage(): SupportedLanguage {
+export function usePreferredLanguages(): SupportedLanguage[] {
   const acceptLanguages = useAcceptLanguages();
-  for (const language of acceptLanguages) {
-    const preferredLanguage = supportedLanguages.find(
-      (e) => e.code === language.code
-    );
-    if (preferredLanguage) {
-      return preferredLanguage;
-    }
-  }
-
-  return supportedLanguages.find((e) => e.code === "en")!;
+  return parsePreferredLanguages(acceptLanguages);
 }
 
 export function findSupportedLanguage(
-  code: string
+  value: string
 ): SupportedLanguage | undefined {
-  return supportedLanguages.find((language) => language.value === code);
+  return supportedLanguages.find((language) => language.value === value);
 }
 
 export function parseAcceptLanguage(request: Request): Language[] {
@@ -96,4 +89,35 @@ export function parseAcceptLanguage(request: Request): Language[] {
   }
 
   return languages;
+}
+
+/**
+ * Used in the backend to determine the preferred languages from Accept-Language
+ * header and returns the ones that are supported. Yields an array of unique
+ * language names, for example: `["english", "dutch"]`
+ */
+export function getPreferredLanguages(request: Request): string[] {
+  const acceptLanguages = parseAcceptLanguage(request);
+  const preferredLanguages = parsePreferredLanguages(acceptLanguages);
+  return uniq(preferredLanguages.map((lng) => lng.value));
+}
+
+export function parsePreferredLanguages(
+  languages: Language[]
+): SupportedLanguage[] {
+  const result: SupportedLanguage[] = [];
+  for (const language of languages) {
+    const preferredLanguage = supportedLanguages.find(
+      (e) => e.code === language.code
+    );
+    if (preferredLanguage) {
+      result.push(preferredLanguage);
+    }
+  }
+
+  if (result.length === 0) {
+    result.push(supportedLanguages.find((e) => e.code === "en")!);
+  }
+
+  return result;
 }

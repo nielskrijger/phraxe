@@ -27,7 +27,7 @@ export function selectStyles<
       clsx(
         "w-full rounded-md border border-slate-400 px-2 py-1 bg-white outline-0 hover:border-indigo-400",
         {
-          "outline outline-indigo-500 border-indigo-600 bg-indigo-50":
+          "outline outline-indigo-500 border-primary bg-indigo-50":
             state.isFocused,
           "border-red-600": !!error,
         }
@@ -61,7 +61,6 @@ export default function Select({
   value,
   onChange,
 }: SelectProps) {
-  console.log("options", options);
   const [selectedValue, setSelectValue] = useState<OptionType | null>(value);
 
   const handleChange = (newValue: SingleValue<OptionType>) => {
@@ -76,6 +75,7 @@ export default function Select({
         value={selectedValue}
         options={options}
         id={id}
+        name={id}
         aria-invalid={error ? true : undefined}
         aria-errormessage={error ? `${id}-error` : undefined}
         unstyled

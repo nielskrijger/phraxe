@@ -8,10 +8,10 @@ import { humanizeNumber } from "~/utils/format";
 import type { Like, LikeObjectType } from "@prisma/client";
 import { useFetcher, useLocation } from "@remix-run/react";
 import type { FormEvent } from "react";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import type { FormMethod } from "@remix-run/router";
-import { LikeAction, likeReducer } from "~/components/LikeButton/likeReducer";
-import { useDebounce } from "~/utils/debounce";
+import { LikeAction, likeReducer } from "./likeReducer";
+import useDebounce from "~/utils/useDebounce";
 import { useOptionalUser } from "~/utils/user";
 import { useNavigate } from "@remix-run/react";
 import { createSearchParams } from "react-router-dom";
@@ -41,8 +41,10 @@ export default function Select({
     isLiked: !like ? null : !like.isDislike,
   };
   const [state, dispatch] = useReducer(likeReducer, initialState);
-  const [action, setAction] = useState<null | LikeAction>(null);
-  const [debouncedAction] = useDebounce(action, 300);
+  const [debouncedAction, setDebouncedAction] = useDebounce<null | LikeAction>(
+    null,
+    300
+  );
 
   const determineAction = (action: LikeAction) => {
     if (action === LikeAction.Like && state.isLiked) {
@@ -68,7 +70,7 @@ export default function Select({
 
     const newAction = determineAction(action);
     dispatch({ type: newAction });
-    setAction(newAction);
+    setDebouncedAction(newAction);
   };
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function Select({
     formData.set("objectType", objectType);
 
     fetcher.submit(formData, { method, action: "/like" });
-    // Fetcher is unstable, so exclude from dependencies
+    // Fetcher is unstable
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedAction, objectId, objectType]);
 
@@ -111,7 +113,7 @@ export default function Select({
         <button
           type="submit"
           aria-label="Select"
-          className="cursor-pointer rounded-bl-xl rounded-tl-xl py-1.5 pl-3 pr-2 leading-none hover:bg-indigo-100 hover:text-indigo-600"
+          className="cursor-pointer rounded-bl-xl rounded-tl-xl py-1.5 pl-3 pr-2 leading-none hover:bg-indigo-100 hover:text-primary"
           onClick={(e) => e.stopPropagation()}
         >
           <>
@@ -137,7 +139,7 @@ export default function Select({
         <button
           type="submit"
           aria-label="Dislike"
-          className="cursor-pointer rounded-br-xl rounded-tr-xl py-1.5 pr-3 pl-2 leading-none hover:bg-indigo-100 hover:text-indigo-600"
+          className="cursor-pointer rounded-br-xl rounded-tr-xl py-1.5 pr-3 pl-2 leading-none hover:bg-indigo-100 hover:text-primary"
           onClick={(e) => e.stopPropagation()}
         >
           {state.isLiked === false ? (

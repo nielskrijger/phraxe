@@ -9,8 +9,6 @@ type Props = {
 
 export default function H2({ children, className }: Props) {
   return (
-    <h2 className={clsx(className, "pb-2 font-serif text-2xl font-bold")}>
-      {children}
-    </h2>
+    <h2 className={clsx(className, "pb-2 text-2xl font-bold")}>{children}</h2>
   );
 }

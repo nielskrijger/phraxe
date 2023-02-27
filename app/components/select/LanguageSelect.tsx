@@ -4,7 +4,7 @@ import type { SupportedLanguage } from "~/utils/language";
 import {
   useAcceptLanguages,
   supportedLanguages,
-  usePreferredLanguage,
+  usePreferredLanguages,
   findSupportedLanguage,
 } from "~/utils/language";
 import { partition } from "lodash";
@@ -25,7 +25,7 @@ type Props = Pick<SelectProps, "id" | "label" | "error"> & {
 
 export default function LanguageSelect({ ...props }: Props) {
   const acceptLanguages = useAcceptLanguages();
-  const preferredLanguage = usePreferredLanguage();
+  const preferredLanguages = usePreferredLanguages();
 
   let options = supportedLanguages.map(languageToOption);
   const [preferredOptions, otherOptions] = partition(options, (lng) =>
@@ -34,7 +34,7 @@ export default function LanguageSelect({ ...props }: Props) {
     })
   );
 
-  // If
+  // Add browser languages to the "Quick select"-list
   let languageOptions: OptionsOrGroups<OptionType, GroupBase<OptionType>>;
   if (preferredOptions.length > 0) {
     languageOptions = [
@@ -53,7 +53,7 @@ export default function LanguageSelect({ ...props }: Props) {
 
   // Determine the initial value
   const initialValue = options.find(
-    (opt) => opt.value === preferredLanguage.value
+    (opt) => opt.value === preferredLanguages[0].value
   );
   if (!initialValue) {
     throw new Error("Failed to find preferred language"); // should never happen (defaults to english)

@@ -3,7 +3,9 @@ import { prisma } from "~/db.server";
 
 function findTags(tags: string[], language: string) {
   return prisma.tag.findMany({
-    where: { OR: tags.map((tag) => ({ name: tag, language })) },
+    where: {
+      OR: tags.map((tag) => ({ nameNormalized: normalizeTag(tag), language })),
+    },
   });
 }
 
@@ -23,16 +25,17 @@ export async function createOrConnectTagsQuery(
   const existingTags = await findTags(tags, language);
 
   const newTags = tags
-    .filter((tag) => {
-      return !existingTags.some(
-        (e) => e.language === language && tag === e.name
-      );
-    })
     .map((tag) => ({
       name: tag,
       nameNormalized: normalizeTag(tag),
       language,
-    }));
+    }))
+    .filter((tag) => {
+      return !existingTags.some(
+        (e) =>
+          e.language === language && tag.nameNormalized === e.nameNormalized
+      );
+    });
 
   return {
     create: newTags,

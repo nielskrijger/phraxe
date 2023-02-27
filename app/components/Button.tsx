@@ -29,7 +29,7 @@ export default function Button({
       value="submitValue"
       className={clsx(
         className,
-        "rounded-full bg-black py-2 px-6 text-white hover:bg-gray-600 focus:bg-gray-500",
+        "rounded-full bg-black py-2 px-6 text-white hover:bg-slate-600 focus:bg-slate-500",
         { "w-full": fullWidth }
       )}
       {...props}

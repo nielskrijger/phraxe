@@ -52,15 +52,15 @@ export default function RadioGroup({
               value={value}
               className={({ checked }) =>
                 clsx(
-                  "cursor-pointer rounded-md border border-slate-300 bg-white p-4 hover:border-indigo-600",
-                  { "border-indigo-600 bg-indigo-50": checked }
+                  "cursor-pointer rounded-md border border-slate-300 bg-white p-4 hover:border-primary",
+                  { "border-primary bg-indigo-50": checked }
                 )
               }
             >
               {({ checked }) => (
                 <div className="flex cursor-pointer flex-col">
                   <HeadlessRadioGroup.Label
-                    className={clsx("font-bold text-gray-900", {
+                    className={clsx("font-bold text-slate-900", {
                       "text-indigo-700": checked,
                     })}
                   >

@@ -144,7 +144,7 @@ export default function Signup() {
       </Button>
 
       <div className="flex items-center justify-center">
-        <div className="text-center text-sm text-gray-500">
+        <div className="text-center text-sm text-slate-500">
           Already have an account?{" "}
           <Link
             to={{

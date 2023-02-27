@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { DetailedHTMLProps, TextareaHTMLAttributes } from "react";
+import type { DetailedHTMLProps } from "react";
 import { forwardRef } from "react";
 import clsx from "clsx";
 import type { InputGroupProps } from "~/components/InputGroup";
@@ -20,7 +20,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, Props>(
           name={id}
           className={clsx(
             className,
-            "w-full rounded-md border border-slate-400 p-2 outline-0 hover:border-indigo-400 focus:border-indigo-600 focus:bg-indigo-50",
+            "w-full rounded-md border border-slate-400 p-2 outline-0 hover:border-indigo-400 focus:border-primary focus:bg-indigo-50",
             { "border-red-600": !!error }
           )}
           aria-invalid={error ? true : undefined}

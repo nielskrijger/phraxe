@@ -15,8 +15,7 @@ export default function SubNavItem({ to, children }: Props) {
     <Link
       to={to}
       className={clsx("px-3 py-2 font-bold uppercase hover:text-slate-600", {
-        "border-b-2 border-indigo-600 pb-1 text-indigo-600 hover:text-indigo-600":
-          active,
+        "border-b-2 border-primary pb-1 text-primary": active,
         "pb-2": !active,
       })}
     >

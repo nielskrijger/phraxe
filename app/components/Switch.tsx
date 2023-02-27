@@ -26,7 +26,7 @@ export default function Switch({
           checked={enabled}
           onChange={onChange}
           className={`${
-            enabled ? "bg-indigo-600" : "bg-gray-200"
+            enabled ? "bg-primary" : "bg-slate-200"
           } relative inline-flex h-6 min-w-[40px] max-w-[40px] items-center rounded-full`}
         >
           <span className="sr-only">Enable notifications</span>

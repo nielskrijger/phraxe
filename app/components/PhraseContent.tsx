@@ -9,10 +9,11 @@ import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
 import { LikeObjectType } from "@prisma/client";
-import LikeButton from "~/components/LikeButton";
+import LikeButton from "~/components/like/LikeButton";
 import { PhraseShare } from ".prisma/client";
 import { Lock } from "@mui/icons-material";
 import Tippy from "@tippyjs/react";
+import Highlighter from "react-highlight-words";
 
 type PhraseSourceProps = { source: string | null };
 
@@ -45,15 +46,25 @@ export type PhraseContentType = SerializeFrom<PhraseType> & {
 type Props = {
   detail?: boolean;
   phrase: PhraseContentType;
+  highlightWords?: string[];
 };
 
-export default function PhraseContent({ phrase, detail = false }: Props) {
+export default function PhraseContent({
+  phrase,
+  highlightWords = [],
+  detail = false,
+}: Props) {
   const hasTags = phrase.tags.length > 0;
   return (
     <>
       {phrase.title && (
         <div className="flex flex-row gap-2">
-          <H3>{phrase.title}</H3>
+          <H3>
+            <Highlighter
+              searchWords={highlightWords}
+              textToHighlight={phrase.title}
+            />
+          </H3>
           {phrase.share === PhraseShare.RESTRICTED && (
             <Tippy content="Private" placement="right" delay={500}>
               <Lock className="text-slate-300" />
@@ -68,7 +79,11 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
           "mt-1": phrase.title && detail,
         })}
       >
-        {phrase.text}
+        <Highlighter
+          highlightClassName="font-bold"
+          searchWords={highlightWords}
+          textToHighlight={phrase.text}
+        />
       </p>
 
       {detail && !!phrase.description && (
@@ -86,7 +101,7 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
           { "sm:grid-cols-2": hasTags } // on large screens shows tags on right side
         )}
       >
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-slate-400">
           {DateTime.fromJSDate(new Date(phrase.createdAt)).toRelative()} by{" "}
           {phrase.user && (
             <Link to={`/user/${phrase.user.usernameLower}`}>
@@ -94,7 +109,16 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
             </Link>
           )}
           {phrase.attribution && (
-            <>&nbsp;| Attributed to {phrase.attribution}</>
+            <>
+              &nbsp;| Attributed to{" "}
+              <Link to={`/search?q=${phrase.attribution}`}>
+                <Highlighter
+                  highlightClassName="font-bold"
+                  searchWords={highlightWords}
+                  textToHighlight={phrase.attribution}
+                />
+              </Link>
+            </>
           )}
           <PhraseSource source={phrase.source} />
         </div>
@@ -108,7 +132,7 @@ export default function PhraseContent({ phrase, detail = false }: Props) {
           >
             {phrase.tags.map(({ id, name }) => (
               <Link to="/" key={id}>
-                <div className="rounded-xl bg-slate-100 px-3 py-1.5 text-sm text-black hover:bg-indigo-100 hover:text-indigo-600">
+                <div className="rounded-xl border border-slate-300 bg-white px-3 py-0.5 text-sm text-slate-500 hover:border-slate-100 hover:bg-slate-100">
                   {name}
                 </div>
               </Link>
